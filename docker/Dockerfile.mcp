@@ -1,9 +1,13 @@
 FROM python:3.10-slim
 
+# 设置工作目录为 /app。之后的 COPY、RUN 等命令将在该目录下执行。
 WORKDIR /app
 
 # 安装依赖
 COPY requirements.txt .
+# 推荐 pip install --no-cache-dir --upgrade pip，但这不是必须的
+RUN pip install --no-cache-dir --upgrade pip
+# --no-cache-dir 避免保留 pip 下载缓存，减小镜像体积
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制 MCP 服务器代码
@@ -14,7 +18,7 @@ COPY trendradar/ ./trendradar/
 # 创建必要目录
 RUN mkdir -p /app/config /app/output
 
-ENV PYTHONUNBUFFERED=1 \
+ENV PYTHONUNBUFFERED=1 \ # 关闭 Python 缓冲，实时输出日志
     CONFIG_PATH=/app/config/config.yaml \
     FREQUENCY_WORDS_PATH=/app/config/frequency_words.txt
 
