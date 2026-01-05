@@ -18,7 +18,8 @@ COPY trendradar/ ./trendradar/
 # 创建必要目录
 RUN mkdir -p /app/config /app/output
 
-ENV PYTHONUNBUFFERED=1 \ # 关闭 Python 缓冲，实时输出日志
+#  PYTHONUNBUFFERED=1 关闭 Python 缓冲，实时输出日志
+ENV PYTHONUNBUFFERED=1 \
     CONFIG_PATH=/app/config/config.yaml \
     FREQUENCY_WORDS_PATH=/app/config/frequency_words.txt
 

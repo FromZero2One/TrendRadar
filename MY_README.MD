@@ -38,3 +38,12 @@ docker stop trendradar
 # 删除容器（保留数据）
 docker rm trendradar
 ```
+
+- 本地链接mcp json配置
+```
+ "trendradar": {
+      "name": "trendradar",
+      "transport": "http",
+      "url": "http://localhost:3333/mcp"
+    }
+```
