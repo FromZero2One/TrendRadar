@@ -47,3 +47,10 @@ docker rm trendradar
       "url": "http://localhost:3333/mcp"
     }
 ```
+
+### 本地自己构建docker镜像
+1. cd docker
+2. docker compose -f docker-compose-build.yml build
+3. 如何存在python版本问题则手动拉取python:  docker pull python:3.11-slim(版本和Dockerfile一致，如果拉取不到则切换其他版本)
+4. 拉取python镜像后再执行 docker compose -f docker-compose-build.yml build
+5. 创建容器 docker compose -f docker-compose-build.yml up -d   （注意：不要直接使用docker-compose up -d 这样会重新拉取远程镜像）
