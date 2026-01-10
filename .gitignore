@@ -43,7 +43,7 @@ Thumbs.db
 logs/
 
 # Output directories
-output/
+output/*
 
 # Local config files
 config/local.yaml
