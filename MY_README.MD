@@ -3,7 +3,7 @@
   - CONFIG_PATH=E:\Project\TrendRadar\config\config.yaml; // 配置文件路径
   - FREQUENCY_WORDS_PATH=E:\Project\TrendRadar\config\frequency_words.txt;  //关键词文件路径
   - ENABLE_WEBSERVER=true    //开启html页面生成
-- 2 在ide使用debugger模式启动项目
+- 2 在ide使用debugger模式启动项目 trendradar.__main__.py
 - 常用docker命令
 ```angular2html
 # 查看运行状态
