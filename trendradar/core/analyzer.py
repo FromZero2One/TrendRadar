@@ -10,7 +10,7 @@
 
 from typing import Dict, List, Tuple, Optional, Callable
 
-from trendradar.core.frequency import matches_word_groups
+from trendradar.core.frequency import matches_word_groups, _word_matches
 
 
 def calculate_news_weight(
@@ -262,19 +262,19 @@ def count_word_frequency(
                     if source_id not in word_stats[group_key]["titles"]:
                         word_stats[group_key]["titles"][source_id] = []
                 else:
-                    # 原有的匹配逻辑
+                    # 原有的匹配逻辑（支持正则语法）
                     if required_words:
                         all_required_present = all(
-                            req_word.lower() in title_lower
-                            for req_word in required_words
+                            _word_matches(req_item, title_lower)
+                            for req_item in required_words
                         )
                         if not all_required_present:
                             continue
 
                     if normal_words:
                         any_normal_present = any(
-                            normal_word.lower() in title_lower
-                            for normal_word in normal_words
+                            _word_matches(normal_item, title_lower)
+                            for normal_item in normal_words
                         )
                         if not any_normal_present:
                             continue
@@ -290,6 +290,7 @@ def count_word_frequency(
                 ranks = source_ranks if source_ranks else []
                 url = source_url
                 mobile_url = source_mobile_url
+                rank_timeline = []
 
                 # 对于 current 模式，从历史统计信息中获取完整数据
                 if (
@@ -306,6 +307,7 @@ def count_word_frequency(
                         ranks = info["ranks"]
                     url = info.get("url", source_url)
                     mobile_url = info.get("mobileUrl", source_mobile_url)
+                    rank_timeline = info.get("rank_timeline", [])
                 elif (
                     title_info
                     and source_id in title_info
@@ -319,6 +321,7 @@ def count_word_frequency(
                         ranks = info["ranks"]
                     url = info.get("url", source_url)
                     mobile_url = info.get("mobileUrl", source_mobile_url)
+                    rank_timeline = info.get("rank_timeline", [])
 
                 if not ranks:
                     ranks = [99]
@@ -350,6 +353,7 @@ def count_word_frequency(
                         "url": url,
                         "mobileUrl": mobile_url,
                         "is_new": is_new,
+                        "rank_timeline": rank_timeline,
                     }
                 )
 
@@ -415,12 +419,15 @@ def count_word_frequency(
                 )
 
     stats = []
-    # 创建 group_key 到位置和最大数量的映射
+    # 创建 group_key 到位置、最大数量、显示名称的映射
     group_key_to_position = {
         group["group_key"]: idx for idx, group in enumerate(word_groups)
     }
     group_key_to_max_count = {
         group["group_key"]: group.get("max_count", 0) for group in word_groups
+    }
+    group_key_to_display_name = {
+        group["group_key"]: group.get("display_name") for group in word_groups
     }
 
     for group_key, data in word_stats.items():
@@ -447,9 +454,12 @@ def count_word_frequency(
         if group_max_count > 0:
             sorted_titles = sorted_titles[:group_max_count]
 
+        # 优先使用 display_name，否则使用 group_key
+        display_word = group_key_to_display_name.get(group_key) or group_key
+
         stats.append(
             {
-                "word": group_key,
+                "word": display_word,
                 "count": data["count"],
                 "position": group_key_to_position.get(group_key, 999),
                 "titles": sorted_titles,
@@ -596,20 +606,20 @@ def count_rss_frequency(
             if len(word_groups) == 1 and word_groups[0]["group_key"] == "全部 RSS":
                 matched = True
             else:
-                # 检查必须词
+                # 检查必须词（支持正则语法）
                 if required_words:
                     all_required_present = all(
-                        req_word.lower() in title_lower
-                        for req_word in required_words
+                        _word_matches(req_item, title_lower)
+                        for req_item in required_words
                     )
                     if not all_required_present:
                         continue
 
-                # 检查普通词
+                # 检查普通词（支持正则语法）
                 if normal_words:
                     any_normal_present = any(
-                        normal_word.lower() in title_lower
-                        for normal_word in normal_words
+                        _word_matches(normal_item, title_lower)
+                        for normal_item in normal_words
                     )
                     if not any_normal_present:
                         continue
@@ -651,6 +661,9 @@ def count_rss_frequency(
     group_key_to_max_count = {
         group["group_key"]: group.get("max_count", 0) for group in word_groups
     }
+    group_key_to_display_name = {
+        group["group_key"]: group.get("display_name") for group in word_groups
+    }
 
     for group_key, data in word_stats.items():
         if data["count"] == 0:
@@ -669,8 +682,11 @@ def count_rss_frequency(
         if group_max_count > 0:
             sorted_titles = sorted_titles[:group_max_count]
 
+        # 优先使用 display_name，否则使用 group_key
+        display_word = group_key_to_display_name.get(group_key) or group_key
+
         stats.append({
-            "word": group_key,
+            "word": display_word,
             "count": data["count"],
             "position": group_key_to_position.get(group_key, 999),
             "titles": sorted_titles,
